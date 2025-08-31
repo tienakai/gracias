@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Happy Birthday Nguyệt - Phiên bản Premium</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: radial-gradient(ellipse at center, #000010 0%, #000000 100%);
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    #message {
+      position: absolute;
+      top: 8%;
+      width: 100%;
+      text-align: center;
+      font-size: 64px;
+      font-weight: 900;
+      color: #ff99cc;
+      font-family: 'Brush Script MT', cursive;
+      text-shadow:
+        0 0 15px #ff66cc,
+        0 0 30px #ff33aa,
+        0 0 45px #ff0099,
+        0 0 60px #ff0066,
+        0 0 75px #ff0033;
+      animation: glow 3s ease-in-out infinite alternate;
+      user-select: none;
+      z-index: 100;
+      letter-spacing: 2px;
+    }
+    
+    @keyframes glow {
+      0% {
+        text-shadow:
+          0 0 20px #ff66cc,
+          0 0 40px #ff33aa,
+          0 0 60px #ff0099,
+          0 0 80px #ff0066;
+        transform: scale(1);
+      }
+      50% {
+        text-shadow:
+          0 0 30px #ff99cc,
+          0 0 60px #ff66cc,
+          0 0 90px #ff33aa,
+          0 0 120px #ff0099;
+        transform: scale(1.05);
+      }
+      100% {
+        text-shadow:
+          0 0 40px #ffccff,
+          0 0 80px #ff99cc,
+          0 0 120px #ff66cc,
+          0 0 160px #ff33aa;
+        transform: scale(1.02);
+      }
+    }
+    
+    #subtitle {
+      position: absolute;
+      top: 20%;
+      width: 100%;
+      text-align: center;
+      font-size: 24px;
+      color: #ffffff;
+      font-family: 'Comic Sans MS', cursive;
+      text-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+      opacity: 0.9;
+      z-index: 100;
+      animation: float 4s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    
+    #particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9c74f, #ff6b6b);
+      animation: confettiFall 5s linear infinite;
+      z-index: 50;
+    }
+    
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="message">✨ HAPPY BIRTHDAY NGUYỆT ✨</div>
+  <div id="subtitle">Chúc mừng sinh nhật tuổi mới!</div>
+  <canvas id="universe"></canvas>
+  <div id="particles"></div>
+
+  <script>
+    const canvas = document.getElementById('universe');
+    const ctx = canvas.getContext('2d');
+    const particlesContainer = document.getElementById('particles');
+    let W, H;
+
+    function resize() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+    }
+    resize();
+
+    // Vị trí bánh sinh nhật
+    const cakeX = W / 2;
+    const cakeY = H / 2 + 50;
+
+    // Tạo confetti
+    function createConfetti() {
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * W + 'px';
+        confetti.style.animationDelay = Math.random() * 5 + 's';
+        confetti.style.animationDuration = (3 + Math.random() * 4) + 's';
+        particlesContainer.appendChild(confetti);
+      }
+    }
+
+    // --- Sao vũ trụ premium với hiệu ứng đặc biệt ---
+    const numStars = 400;
+    const starColors = [
+      '#FF6B6B', '#4ECDC4', '#45B7D1', '#F9C74F', '#FF6B6B',
+      '#FF8A8A', '#6AFFD8', '#6BC2FF', '#FFD166', '#FF8A8A',
+      '#FF5252', '#00D4AA', '#00A8FF', '#FFB74D', '#FF5252'
+    ];
+
+    class PremiumStar {
+      constructor() {
+        this.reset();
+        this.trail = [];
+        this.maxTrail = 5;
+      }
+      
+      reset() {
+        this.x = Math.random() * W;
+        this.y = Math.random() * H;
+        this.r = 1 + Math.random() * 2;
+        this.color = starColors[Math.floor(Math.random() * starColors.length)];
+        this.alpha = 0.4 + Math.random() * 0.6;
+        this.speed = 0.2 + Math.random() * 0.4;
+        this.glowSize = 10 + Math.random() * 20;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+        this.pulseSpeed = 0.5 + Math.random() * 1;
+        this.pulsePhase = Math.random() * Math.PI * 2;
+      }
+      
+      update() {
+        // Lưu vết đuôi
+        this.trail.unshift({ x: this.x, y: this.y, alpha: this.alpha });
+        if (this.trail.length > this.maxTrail) {
+          this.trail.pop();
+        }
+        
+        // Di chuyển về bánh với hiệu ứng xoáy
+        const dx = cakeX - this.x;
+        const dy = cakeY - this.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        
+        // Tốc độ tăng khi gần bánh + hiệu ứng xoáy
+        const moveSpeed = this.speed + (150 / (dist + 30));
+        const angle = Math.atan2(dy, dx) + Math.sin(dist * 0.01) * 0.3;
+        
+        this.x += Math.cos(angle) * moveSpeed;
+        this.y += Math.sin(angle) * moveSpeed;
+        
+        // Hiệu ứng nhấp nháy và xoay
+        this.alpha = 0.4 + 0.3 * Math.sin(Date.now() * 0.001 * this.pulseSpeed + this.pulsePhase);
+        this.rotation += this.rotationSpeed;
+        
+        // Reset khi đến gần bánh
+        if (dist < 25) {
+          this.reset();
+        }
+      }
+      
+      draw() {
+        // Vẽ vết đuôi
+        for (let i = 0; i < this.trail.length; i++) {
+          const point = this.trail[i];
+          const trailAlpha = point.alpha * (1 - i / this.trail.length) * 0.3;
+          
+          ctx.beginPath();
+          const trailGradient = ctx.createRadialGradient(
+            point.x, point.y, 0,
+            point.x, point.y, this.r * 3
+          );
+          trailGradient.addColorStop(0, this.color + Math.floor(trailAlpha * 255).toString(16).padStart(2, '0'));
+          trailGradient.addColorStop(1, 'transparent');
+          
+          ctx.fillStyle = trailGradient;
+          ctx.arc(point.x, point.y, this.r * 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // Vẽ sao chính với hiệu ứng glow
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        
+        // Hiệu ứng glow lớn
+        const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.glowSize);
+        glowGradient.addColorStop(0, this.color + Math.floor(this.alpha * 255).toString(16).padStart(2, '0'));
+        glowGradient.addColorStop(0.3, this.color + Math.floor(this.alpha * 128).toString(16).padStart(2, '0'));
+        glowGradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = glowGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.glowSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Sao hình ngôi sao
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 15;
+        
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+          const outerRadius = this.r;
+          const innerRadius = this.r * 0.4;
+          
+          ctx.lineTo(
+            Math.cos(angle) * outerRadius,
+            Math.sin(angle) * outerRadius
+          );
+          
+          ctx.lineTo(
+            Math.cos(angle + Math.PI / 5) * innerRadius,
+            Math.sin(angle + Math.PI / 5) * innerRadius
+          );
+        }
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+      }
+    }
+
+    let stars = [];
+    function initStars() {
+      stars = [];
+      for (let i = 0; i < numStars; i++) {
+        stars.push(new PremiumStar());
+      }
+    }
+
+    // --- Bánh sinh nhật premium siêu chi tiết ---
+    function drawPremiumCake(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      
+      // Hiệu ứng ánh sáng tỏa ra từ bánh
+      const lightGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 200);
+      lightGradient.addColorStop(0, 'rgba(255, 182, 193, 0.2)');
+      lightGradient.addColorStop(1, 'transparent');
+      
+      ctx.fillStyle = lightGradient;
+      ctx.beginPath();
+      ctx.arc(0, 0, 200, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Bóng đổ nâng cao
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 15;
+      
+      // Tầng dưới - bánh socola premium
+      const baseWidth = 280;
+      const baseHeight = 80;
+      const baseRadius = 25;
+      
+      drawLayeredCakeLayer(-baseWidth/2, 0, baseWidth, baseHeight, baseRadius, 
+                          ['#7D4B2A', '#5C3715'], ['#FFB6C1', '#E68A99'], 25);
+      
+      // Trang trí tầng dưới
+      drawCakeDecorations(0, -25, baseWidth - 40, '#FF69B4', '#FF1493');
+      
+      // Tầng trên - bánh vani premium
+      const topWidth = 200;
+      const topHeight = 70;
+      const topRadius = 20;
+      
+      drawLayeredCakeLayer(-topWidth/2, -topHeight - 15, topWidth, topHeight, topRadius,
+                          ['#F3E5AB', '#D9C77B'], ['#FFF0F5', '#E0C9D1'], 30);
+      
+      // Trang trí tầng trên
+      drawCakeDecorations(0, -topHeight - 40, topWidth - 40, '#FF99CC', '#FF66CC');
+      
+      // Nến premium với hiệu ứng lửa thật
+      const candlePositions = [-70, -35, 0, 35, 70];
+      for (let pos of candlePositions) {
+        drawPremiumCandle(pos, -topHeight - 45);
+      }
+      
+      // Chữ Happy Birthday trên bánh
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      ctx.fillText('Happy Birthday', 0, -topHeight - 60);
+      
+      ctx.restore();
+    }
+    
+    function drawLayeredCakeLayer(x, y, width, height, radius, cakeColors, creamColors, creamHeight) {
+      // Vẽ lớp bánh
+      roundRectWithGradient(ctx, x, y, width, height, radius, cakeColors[0], cakeColors[1]);
+      
+      // Vẽ lớp kem
+      roundRectWithGradient(ctx, x + 10, y - creamHeight, width - 20, creamHeight, radius - 5, creamColors[0], creamColors[1]);
+      
+      // Viền kem
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      roundRect(ctx, x + 10, y - creamHeight, width - 20, creamHeight, radius - 5);
+    }
+    
+    function drawCakeDecorations(x, y, width, color1, color2) {
+      ctx.fillStyle = color1;
+      for(let i = -width/2 + 15; i < width/2 - 5; i += 20) {
+        // Hoa văn hình sao
+        ctx.save();
+        ctx.translate(x + i, y);
+        
+        ctx.beginPath();
+        for (let j = 0; j < 5; j++) {
+          const angle = (j * 2 * Math.PI / 5) - Math.PI / 2;
+          ctx.lineTo(
+            Math.cos(angle) * 8,
+            Math.sin(angle) * 8
+          );
+        }
+        ctx.closePath();
+        ctx.fill();
+        
+        // Điểm sáng
+        ctx.fillStyle = color2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      }
+    }
+    
+    function drawPremiumCandle(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      
+      // Thân nến với hiệu ứng 3D
+      const candleGradient = ctx.createLinearGradient(0, -40, 0, 0);
+      candleGradient.addColorStop(0, '#FFFFFF');
+      candleGradient.addColorStop(0.5, '#F0F0F0');
+      candleGradient.addColorStop(1, '#E0E0E0');
+      
+      roundRect(ctx, -6, -40, 12, 40, 3, candleGradient);
+      
+      // Hiệu ứng lửa thật với animation
+      const time = Date.now() * 0.01;
+      const flickerX = Math.sin(time * 0.2 + x) * 1.5;
+      const flickerY = Math.sin(time * 0.3 + y) * 2;
+      
+      // Lửa ngoài cùng
+      const outerFlame = ctx.createRadialGradient(
+        flickerX, -45 + flickerY, 0,
+        flickerX, -45 + flickerY, 15
+      );
+      outerFlame.addColorStop(0, 'rgba(255, 255, 150, 1)');
+      outerFlame.addColorStop(0.7, 'rgba(255, 165, 0, 0.6)');
+      outerFlame.addColorStop(1, 'rgba(255, 69, 0, 0)');
+      
+      ctx.fillStyle = outerFlame;
+      ctx.beginPath();
+      ctx.ellipse(flickerX, -45 + flickerY, 10, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Lửa trong
+      const innerFlame = ctx.createRadialGradient(
+        flickerX, -47 + flickerY, 0,
+        flickerX, -47 + flickerY, 8
+      );
+      innerFlame.addColorStop(0, 'rgba(255, 255, 200, 1)');
+      innerFlame.addColorStop(1, 'rgba(255, 200, 100, 0)');
+      
+      ctx.fillStyle = innerFlame;
+      ctx.beginPath();
+      ctx.ellipse(flickerX, -47 + flickerY, 6, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Tia lửa nhỏ
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      for (let i = 0; i < 3; i++) {
+        const sparkAngle = Math.random() * Math.PI * 2;
+        const sparkDist = 5 + Math.random() * 8;
+        ctx.beginPath();
+        ctx.arc(
+          flickerX + Math.cos(sparkAngle) * sparkDist,
+          -45 + flickerY + Math.sin(sparkAngle) * sparkDist,
+          1 + Math.random() * 2,
+          0, Math.PI * 2
+        );
+        ctx.fill();
+      }
+      
+      ctx.restore();
+    }
+    
+    function roundRectWithGradient(ctx, x, y, width, height, radius, color1, color2) {
+      const gradient = ctx.createLinearGradient(x, y, x, y + height);
+      gradient.addColorStop(0, color1);
+      gradient.addColorStop(1, color2);
+      
+      roundRect(ctx, x, y, width, height, radius, gradient);
+    }
+    
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke = false) {
+      if (typeof radius === 'number') {
+        radius = {tl: radius, tr: radius, br: radius, bl: radius};
+      } else {
+        radius = {tl: 0, tr: 0, br: 0, bl: 0, ...radius};
+      }
+      
+      ctx.beginPath();
+      ctx.moveTo(x + radius.tl, y);
+      ctx.lineTo(x + width - radius.tr, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+      ctx.lineTo(x + width, y + height - radius.br);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+      ctx.lineTo(x + radius.bl, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+      ctx.lineTo(x, y + radius.tl);
+      ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+      ctx.closePath();
+      
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // --- Vòng lặp vẽ premium ---
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+      
+      // Nền vũ trụ động
+      const time = Date.now() * 0.0005;
+      const bgGradient = ctx.createRadialGradient(
+        cakeX + Math.sin(time) * 50,
+        cakeY + Math.cos(time) * 50,
+        100,
+        cakeX, cakeY, Math.max(W, H)
+      );
+      bgGradient.addColorStop(0, '#330033');
+      bgGradient.addColorStop(0.3, '#220022');
+      bgGradient.addColorStop(1, '#000010');
+      
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, W, H);
+      
+      // Vẽ các tinh vân
+      drawNebulae();
+      
+      // Vẽ sao premium
+      for (let star of stars) {
+        star.update();
+        star.draw();
+      }
+      
+      // Vẽ bánh sinh nhật premium
+      drawPremiumCake(cakeX, cakeY);
+      
+      requestAnimationFrame(animate);
+    }
+    
+    function drawNebulae() {
+      const time = Date.now() * 0.001;
+      const nebulaColors = [
+        'rgba(255, 105, 180, 0.1)',
+        'rgba(147, 112, 219, 0.08)',
+        'rgba(100, 149, 237, 0.06)'
+      ];
+      
+      for (let i = 0; i < 3; i++) {
+        const size = 300 + i * 100;
+        const x = cakeX + Math.sin(time * (0.2 + i * 0.1)) * 100;
+        const y = cakeY + Math.cos(time * (0.3 + i * 0.1)) * 100;
+        
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+        gradient.addColorStop(0, nebulaColors[i]);
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      resize();
+      initStars();
+    });
+
+    // Khởi tạo
+    initStars();
+    createConfetti();
+    animate();
+
+    // Hiệu ứng chữ nổi
+    setTimeout(() => {
+      document.getElementById('message').style.fontSize = '68px';
+      document.getElementById('message').textContent = '🎂 HAPPY BIRTHDAY NGUYỆT 🎂';
+    }, 2000);
+  </script>
+</body>
+</html>
